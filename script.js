@@ -1,34 +1,98 @@
-game();
 
-function game() {
-    let playerWinsRound = 0;
-    let computerWinsRound = 0;
-
-    let round = 1;
-    while (round <= 5) {
-        let playerSelection = playerPlay();
-        let computerSelection = computerPlay();
-
-        let result = playRound(playerSelection, computerSelection);
-        if(result === "player wins") playerWinsRound++;
-        if(result === "computer win") computerWinsRound++;
-        round++;
+let view = {
+    start: document.querySelector(".start"),
+    playAgain: document.querySelector(".play-again"),
+    message: document.querySelector(".message"),
+    playerChoice: document.querySelector(".player-choice"),
+    showResult: document.querySelector(".result"),
+    playerSelect: document.querySelectorAll(".player-choice img"),
+    image1: document.querySelector("#img-1"),
+    image2: document.querySelector("#img-2"),
+    playerScore: document.querySelector("#player-score"),
+    computerScore: document.querySelector("#computer-score"),
+    playerwin: 0,
+    computerwin: 0,
+    render(target, content, attributes){
+        for (const key in attributes) {
+            target.setAttribute(key, attributes[key]);   
+        }
+        target.textContent = content;
     }
-
-    displayResult(playerWinsRound, computerWinsRound);
 }
 
+view.start.addEventListener("click", (e) => {
+    e.preventDefault();
+    hide(view.start);
+    show(view.playerChoice);
+    show(view.showResult);
+    view.render(view.message, "Choose your weapon...");
+    e.stopPropagation();
+});
 
-function displayResult(playerWinsRound, computerWinsRound) {
-    console.log(`Player Win: ${playerWinsRound}`);
-    console.log(`Computer Win: ${computerWinsRound}`);
+view.playAgain.addEventListener("click", (e) => {
+    e.preventDefault();
+    view.render(view.playerScore, "0");
+    view.render(view.computerScore, "0");
+    view.playerwin = 0;
+    view.computerwin = 0;
+    view.render(view.message, "Choose your weapon...")
+    hide(view.playAgain);
+    show(view.playerChoice);
+   
+    e.stopPropagation();
+});
 
-    if (playerWinsRound > computerWinsRound) {
-        console.log(`CONGRTULATIONS PLAYER, YOU WON!!!!`);
-    } else if (playerWinsRound < computerWinsRound) {
-        console.log(`SO SORRY PLAYER, YOU LOST. COMPUTER WINS!!!!`);
-    } else {
-        console.log(`IT'S A TIE, PLAY ANOTHER ROUND`);
+const choiceArray = Array.from(view.playerSelect);
+choiceArray.forEach(img => {
+    img.addEventListener("click", (e) => {
+        playGame(e);
+    })
+});
+
+function playGame(e){
+    let playerSelection = e.target.alt;
+    let computerSelection = computerPlay();
+    let result = playRound(playerSelection, computerSelection);
+
+    displayResult(playerSelection, computerSelection, result);
+}
+
+function displayResult(player, computer, result) {
+    
+
+    view.image1.setAttribute("src", checkEntry(player));
+    view.image2.setAttribute("src", checkEntry(computer));
+    view.render(view.message, result.msg);
+    show(view.image1);
+    show(view.image2);
+
+   
+    switch (result.winner) {
+        case "player":
+            view.playerwin++;
+            view.render(view.playerScore, view.playerwin);
+            break;
+        case "computer":
+            view.computerwin++;
+            view.render(view.computerScore, view.computerwin);
+            break;
+        default:
+            break;
+    }
+
+    if (view.playerwin == 5) {
+        view.render(view.message, "CONGRATULATIONS PLAYER... YOU WON THIS FIESTY ROUND!!!");
+        hide(view.image1);
+        hide(view.image2);
+        hide(view.playerChoice);
+        show(view.playAgain);
+    } 
+    if (view.computerwin == 5) {
+        view.render(view.message, "SORRY PLAYER...COMPUTER SEEMS SMARTER ON THIS ROUND!!!");
+        hide(view.image1);
+        hide(view.image2);
+        hide(view.playerChoice);
+        show(view.playAgain);
     }
 }
 
@@ -46,9 +110,6 @@ function computerPlay() {
         case 2:
             pick = "scissors";
             break;
-        default:
-            alert("Not a valid entry");
-            break;
     }
     return pick;
 }
@@ -57,54 +118,42 @@ function playRound(playerSelection, computerSelection) {
     playerSelection = playerSelection.toLowerCase();
     
     if (playerSelection === computerSelection) {
-        console.log("It's a Draw! Play again");
+        return {winner: "none", msg: "It's a draw. Play again"};
     } else if (playerSelection === "rock" && computerSelection === "paper") {
-        console.log("Oops! Paper wraps Rock. You Lose");
-        return "computer win";
+        return {winner: "computer", msg: "Oops! Paper wraps Rock. You Lose 😿😿"};
         } else if (playerSelection === "rock" && computerSelection === "scissors") {
-            console.log("Hurray! Rock curshes Scissors. You Win");
-            return "player wins";
+            return {winner: "player", msg: "Hurray! Rock crushes Scissors. You Win 😆😆"};
             } else if (playerSelection === "paper" && computerSelection === "rock"){
-                console.log("Hurray! Paper wraps Rock. You Win");
-                return "player wins";
+                return {winner: "player", msg: "Hurray! Paper wraps Rock. You Win 😆😆"};
                 }else if (playerSelection === "paper" && computerSelection === "scissors") {
-                    console.log("Oops! Scissors cuts Paper. You Lose");
-                    return "computer win";
+                    return {winner: "computer", msg: "Oops! Scissors cuts Paper. You Lose 😿😿"};
                     }else if (playerSelection === "scissors" && computerSelection === "rock") {
-                     console.log("Oops! Rock crushes Scissors. You Lose");
-                     return "computer win";
+                     return {winner: "computer", msg: "Oops! Rock crushes Scissors. You Lose 😿😿"};
                         }else if (playerSelection === "scissors" && computerSelection === "paper") {
-                            console.log("Hurray! Scissors cuts Paper. You Win");
-                            return "player wins";
+                            return {winner: "player", msg: "Hurray! Scissors cuts Paper. You Win 😆😆"};
                             }
 
     
 }
 
-function playerPlay() {
-    let entry = prompt("Enter Selection (rock, paper or scissors)");
-    entry = entry.toLowerCase();
- 
-    let pick = checkEntry(entry)
-    while (pick == false) {
-        alert("Please enter one of 'rock', 'paper' or 'scissors'");
-        entry = prompt("Enter Selection (rock, paper or scissors)");
-        entry = entry.toLowerCase();
-        pick = checkEntry(entry)
-    }
-    return entry;
-}
-
 function checkEntry(word) {
-    if(word == "rock" || word == "paper" || word == "scissors"){
-        return true;
-    }else
-        return false
+    switch (word.toLowerCase()) {
+        case "rock":
+            return "images/r1.png";
+            break;
+        case "paper":
+            return "images/p1.png";
+            break;
+        case "scissors":
+            return "images/s1.png";
+            break;
+    }
 }
 
+function show(element) {
+    element.style.display = "block";
+}
 
-
-// console.log(`Player: ${playerSelection}, Computer: ${computerSelection}`);
-
-
-//console.log(computerPlay());
+function hide(element) {
+    element.style.display = "none";
+}
